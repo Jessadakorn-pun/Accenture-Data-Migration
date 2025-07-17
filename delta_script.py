@@ -10,7 +10,7 @@ from intern_lib  import DeltaProcessorMock2, DeltaProcessorMock3
 
 # Delta Program Mock 3
 dp_mock3 = DeltaProcessorMock3(
-    master_path=r"C:\Users\USER\Desktop\Intern_WorkSpace\Master.xlsx"
+    master_path=r"C:\Users\USER\Desktop\Intern_WorkSpace\Master3.xlsx"
 )
 
 dp_mock3.run()
