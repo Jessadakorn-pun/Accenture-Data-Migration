@@ -74,68 +74,120 @@ class DeltaProcessor:
         for ws_name in wb.sheetnames:
             if ws_name in self.exceptions:
                 continue
+            
+            print(f" Sheet “{ws_name}”:")
+            print(f" Start Time : {datetime.datetime.now()}")
+            
+            
             ws = wb[ws_name]
 
             # Backup sheet
+            t_backup_start = time.time()
             backup = wb.copy_worksheet(ws)
             backup.title = f"{ws_name}_backup"
+            t_backup_end = time.time()
+            print(f"  • Backup sheet : {t_backup_end - t_backup_start:.2f}s")
 
             # Load into DataFrame
+            t_load_start = time.time()
             df = pd.read_excel(
                 file_path,
                 sheet_name=ws_name,
                 header=fr - 2,
                 dtype=str
             )
+            t_load_end = time.time()
+            print(f"  • Load DataFrame : {t_load_end - t_load_start:.2f}s")
 
             # Validate mock values if enabled
             if self.params['enable_mock_check'] == 1:
+                t_mock_start = time.time()
                 mc = self.params['mock_col'] - 1
                 invalid = ~df.iloc[:, mc].isin(['2', '3'])
                 if invalid.any():
                     rows = df.index[invalid].tolist()
                     raise ValueError(f"Incorrect mock values in rows {rows} of sheet '{ws_name}'")
+                t_mock_end = time.time()
+                print(f"  • Validate mock values : {t_mock_end - t_mock_start:.2f}s")
+            
+            # sort by [key, mock]
+            t25 = time.time()
+            kc = self.params['key_col'] - 1
+            mc = self.params['mock_col'] - 1
+            df.sort_values(by=[df.columns[kc], df.columns[mc]], inplace=True)
+            df.reset_index(drop=True, inplace=True)
+            print(f"  • sort: {time.time()-t25:.2f}s")
 
             # DeltaDelete: old (2) not in new (3)
+            t_delete_start = time.time()
             df = self._delta_delete(df)
+            t_delete_end = time.time()
+            print(f"  •  DeltaDelete : {t_delete_end - t_delete_start:.2f}s")
 
             # DeltaNew: new (3) not in old (2)
+            t_new_start = time.time()
             df = self._delta_new(df)
+            t_new_end = time.time()
+            print(f"  • DeltaNew : {t_new_end - t_new_start:.2f}s")
 
             # DeltaChange: compare adjacent old-new pairs
+            t_change_start = time.time()
             drop_idx, to_color = self._delta_change(df, ws)
+            t_change_end = time.time()
+            print(f"  • DeltaChange : {t_change_end - t_change_start:.2f}s")
 
             # Drop identical new rows
+            t_drop_start = time.time()
             if drop_idx:
                 df.drop(index=drop_idx, inplace=True)
                 df.reset_index(drop=True, inplace=True)
+            t_drop_end = time.time()
+            print(f"  • Drop identical rows : {t_drop_end - t_drop_start:.2f}s")
 
             # Remap highlight coordinates after drops
+            t_remap_start = time.time()
             all_drops = sorted(drop_idx)
             remapped = []
             for (r, c) in to_color:
                 offset = sum(1 for dr in all_drops if dr < r)
                 remapped.append((r - offset, c))
             to_color = remapped
+            t_remap_end = time.time()
+            print(f"  • Remap highlights : {t_remap_end - t_remap_start:.2f}s")
 
             # Clear existing data rows
+            t_clear_start = time.time()
             num_old = ws.max_row - fr + 1
             if num_old > 0:
                 ws.delete_rows(fr, amount=num_old)
+            t_clear_end = time.time()
+            print(f"  • Clear old rows : {t_clear_end - t_clear_start:.2f}s")
+
             # Write updated rows
+            t_write_start = time.time()
             for row in dataframe_to_rows(df, index=False, header=False):
                 ws.append(row)
+            t_write_end = time.time()
+            print(f"  • Write rows : {t_write_end - t_write_start:.2f}s")
 
             # Restore formatting
+            t_restore_start = time.time()
             backup_ws = wb[f"{ws_name}_backup"]
             self._restore_sheet_format(ws, backup_ws, fr)
+            t_restore_end = time.time()
+            print(f"  • Restore formatting : {t_restore_end - t_restore_start:.2f}s")
 
             # Highlight changes in pink
+            t_highlight_start = time.time()
             for r, c in to_color:
                 ws.cell(row=fr + r, column=c + 1).fill = self._pink
+            t_highlight_end = time.time()
+            print(f"  • Highlight cells : {t_highlight_end - t_highlight_start:.2f}s \n")
 
         wb.save(file_path)
         print(f" → file done in {time.time()-t0:.2f}s")
+
+    # (Other methods unchanged)
 
     def _delta_delete(self, df: pd.DataFrame) -> pd.DataFrame:
         p = self.params
@@ -144,9 +196,7 @@ class DeltaProcessor:
         sc = p['status_prev_col'] - 1
         dc = p['delta_col'] - 1
         rng = df if p['record_limit'] == 0 else df.iloc[:p['record_limit']]
-        # Collect new (mock=3) keys
         new_keys = set(rng.loc[rng.iloc[:, mc] == '3', df.columns[kc]])
-        # Mark old=2 not in new, skip 'Add' rows
         mask = (
             (df.iloc[:, mc] == '2') &
             (~df.iloc[:, kc].isin(new_keys)) &
@@ -161,9 +211,7 @@ class DeltaProcessor:
         kc = p['key_col'] - 1
         dc = p['delta_col'] - 1
         rng = df if p['record_limit'] == 0 else df.iloc[:p['record_limit']]
-        # Collect old (mock=2) keys
         old_keys = set(rng.loc[rng.iloc[:, mc] == '2', df.columns[kc]])
-        # Mark new=3 not in old
         mask = (df.iloc[:, mc] == '3') & (~df.iloc[:, kc].isin(old_keys))
         df.loc[mask, df.columns[dc]] = 'New'
         return df
@@ -176,13 +224,11 @@ class DeltaProcessor:
         hdr = p['header_row']
         n = len(df)
 
-        # Identify adjacent old-new pairs (new=3, previous old=2)
         is_new = df.iloc[:, mc] == '3'
         is_old = df.iloc[:, mc].shift(1) == '2'
         same_key = df.iloc[:, kc] == df.iloc[:, kc].shift(1)
         pair = is_new & is_old & same_key
 
-        # Determine which columns to compare
         start = p['start_compare_col'] - 1
         valid = []
         for j in range(start, df.shape[1]):
@@ -192,7 +238,6 @@ class DeltaProcessor:
             valid.append(j)
 
         drop_idx, to_color = [], []
-        # Loop bottom-up
         for i in range(n - 1, 0, -1):
             if not pair.iat[i]:
                 continue
@@ -204,7 +249,6 @@ class DeltaProcessor:
             else:
                 df.iat[i, dc] = 'Change'
                 df.iat[i - 1, dc] = 'Change'
-                # Collect cells to highlight
                 for idx, changed in enumerate(diffs):
                     if changed:
                         col = valid[idx]
@@ -212,7 +256,6 @@ class DeltaProcessor:
         return drop_idx, to_color
 
     def _restore_sheet_format(self, live_ws, backup_ws, first_row: int):
-        # Copy column widths and row heights
         for col_letter, dim in backup_ws.column_dimensions.items():
             if dim.width:
                 live_ws.column_dimensions[col_letter].width = dim.width
@@ -220,7 +263,6 @@ class DeltaProcessor:
             if dim.height:
                 live_ws.row_dimensions[row_idx].height = dim.height
 
-        # Copy header styles
         hdr = first_row - 1
         for cell in backup_ws[hdr]:
             tgt = live_ws.cell(row=hdr, column=cell.column)
@@ -230,7 +272,6 @@ class DeltaProcessor:
                 except:
                     pass
 
-        # Apply data font and borders
         data_font = Font(name="Leelawadee", size=10)
         thin = Side(border_style="thin", color="000000")
         border = Border(left=thin, right=thin, top=thin, bottom=thin)
