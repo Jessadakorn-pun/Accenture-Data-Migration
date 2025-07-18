@@ -4,7 +4,7 @@ import pandas as pd
 def save_load_sheets_to_txt(
     excel_path: str,
     out_dir1: str,
-    sep: str = '\t'
+    sep: str = '\t',
 ):
     """
     Reads all sheets in `excel_path` whose name begins with "Load_"
@@ -49,5 +49,5 @@ if __name__ == "__main__":
 
     save_load_sheets_to_txt(
     excel_path=r'C:\Users\j.a.vorathammaporn\OneDrive - Accenture\Desktop\PTT-WorkSpace\3_LSMW_Load\TM-2011\POWER_DM-M3_H2R-TM-T.8 Infotype 2011 - Time Event_V1.2_20250625 H2R 1.xlsx',
-    out_dir1=r'C:\Users\j.a.vorathammaporn\OneDrive - Accenture\Desktop\PTT-WorkSpace\3_LSMW_Load\LSMWtoTXT\Load',
+    out_dir1=r'C:\Users\j.a.vorathammaporn\OneDrive - Accenture\Desktop\PTT-WorkSpace\3_LSMW_Load\00_LSMWtoTXT\Load',
 )

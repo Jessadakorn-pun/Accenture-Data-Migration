@@ -34,12 +34,11 @@ def process_files(input_directory, output_directory, lines_to_delete):
 
 if __name__ == "__main__":
     # Specify the input directory containing the text files
-    input_directory = r"C:\Users\wasurat.boonnan\OneDrive - Accenture\Desktop\Working Space"
+    input_directory = r"C:\Users\j.a.vorathammaporn\OneDrive - Accenture\Desktop\PTT-WorkSpace\1_Extract\00_RAW_NO_HEAD_CUT"
     
     # Specify the output directory where the modified files will be saved
-    output_directory = r"C:\Users\wasurat.boonnan\OneDrive - Accenture\Desktop\Working Space\delete header"
-    # output_directory = r"C:\Users\wasurat.boonnan\OneDrive - Accenture\Desktop\Data Trnasfomation\Transformed Data\Mock3\M3 Reconcile\M3 Reconcile Export file"
-
+    output_directory = r"C:\Users\j.a.vorathammaporn\OneDrive - Accenture\Desktop\PTT-WorkSpace\1_Extract\01_DELET_HEADER"
+    
     # Specify the lines to delete (0-based index)
     lines_to_delete = [0, 2]
 
