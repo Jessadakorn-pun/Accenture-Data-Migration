@@ -27,9 +27,9 @@ def save_load_sheets_to_txt(
     # Load Excel file (to get sheet names without reading all data at once)
     xls = pd.ExcelFile(excel_path)
     
-    # Process each sheet whose name starts with "Load_"
+    # Process each sheet whose name starts with "batch_"
     for sheet_name in xls.sheet_names:
-        if sheet_name.startswith('Load_'):
+        if sheet_name.startswith('batch_'):
             # Read sheet into DataFrame (all columns as strings)
             df = pd.read_excel(excel_path, sheet_name=sheet_name, dtype=str)
             

@@ -4,4 +4,5 @@ from .sap_extractor import SAPExtractor, FilterSpec
 from .file_processor import FileProcessor
 from .delta_processor_mock2 import DeltaProcessor as DeltaProcessorMock2
 from .delta_processor_mock3 import DeltaProcessor as DeltaProcessorMock3
+from .delta_processor_cutover import DeltaProcessor as DeltaProcessorCutover
 from .preload_reconcile_template import PrioritySheetProcessor 

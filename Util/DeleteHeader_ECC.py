@@ -34,7 +34,8 @@ def process_files(input_directory, output_directory, lines_to_delete):
 
 if __name__ == "__main__":
     # Specify the input directory containing the text files
-    input_directory = r"C:\Users\j.a.vorathammaporn\OneDrive - Accenture\Desktop\PTT-WorkSpace\1_Extract\00_RAW_NO_HEAD_CUT"
+    # input_directory = r"C:\Users\j.a.vorathammaporn\OneDrive - Accenture\Desktop\PTT-WorkSpace\1_Extract\00_RAW_NO_HEAD_CUT"
+    input_directory = r"C:\Users\j.a.vorathammaporn\OneDrive - Accenture\Documents\SAP\SAP GUI"
     
     # Specify the output directory where the modified files will be saved
     output_directory = r"C:\Users\j.a.vorathammaporn\OneDrive - Accenture\Desktop\PTT-WorkSpace\1_Extract\01_DELET_HEADER"

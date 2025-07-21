@@ -1,4 +1,4 @@
-Sub Upload01_PrepareToLSMW()
+Sub PrepareToLSMW()
     '
     ' PrepareToLSMW Macro
     ' This macro prepares a file for import into LSMW (Legacy System Migration Workbench)
