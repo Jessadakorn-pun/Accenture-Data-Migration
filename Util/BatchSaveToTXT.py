@@ -42,13 +42,12 @@ def save_load_sheets_to_txt(
             # Write both files as UTF-8 with BOM
             df.to_csv(path1, sep=sep, index=False, encoding='utf-8-sig')
             
-            print(f"Saved {sheet_name!r} →")
-            print(f"  • {path1}")
-            print("All sheets saved successfully.")
+            print(f"Saved {sheet_name!r}")
+        print("All sheets saved successfully.")
             
 if __name__ == "__main__":
     save_load_sheets_to_txt(
-        excel_path=r'C:\Users\j.a.vorathammaporn\OneDrive - Accenture\Desktop\PTT-WorkSpace\3_LSMW_Load\TM-2011\Data_Preload.xlsx',
-        out_dir1=r'C:\Users\j.a.vorathammaporn\OneDrive - Accenture\Desktop\PTT-WorkSpace\3_LSMW_Load\TM-2011',
+        excel_path=r'C:\Users\j.a.vorathammaporn\OneDrive - Accenture\Desktop\PTT-WorkSpace\3_LSMW_Load\TM-2011\test\test.xlsx',
+        out_dir1=r'C:\Users\j.a.vorathammaporn\OneDrive - Accenture\Desktop\PTT-WorkSpace\3_LSMW_Load\TM-2011\test',
     )
     

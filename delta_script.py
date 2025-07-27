@@ -1,6 +1,5 @@
 import os
-# from intern_lib  import DeltaProcessorMock2
-from intern_lib  import DeltaProcessorMock3
+from intern_lib  import (DeltaProcessorMock2, DeltaProcessorMock3, delta_processor_cutover)
 
 # Point at your master control workbook:
 
@@ -10,8 +9,15 @@ from intern_lib  import DeltaProcessorMock3
 # )
 
 # Delta Program Mock 3
-dp_mock3 = DeltaProcessorMock3(
-    master_path=r"C:\Users\j.a.vorathammaporn\OneDrive - Accenture\Desktop\PTT-WorkSpace\Accenture-Data-Migration\Master3.xlsx"
+# dp_mock3 = DeltaProcessorMock3(
+#     master_path=r"C:\Users\j.a.vorathammaporn\OneDrive - Accenture\Desktop\PTT-WorkSpace\Accenture-Data-Migration\Master3.xlsx"
+# )
+
+# dp_mock3.run()
+
+# Delta Program Mock 4 (Cutover)
+dp_mock4 = DeltaProcessorMock3(
+    master_path=r"C:\Users\j.a.vorathammaporn\OneDrive - Accenture\Desktop\PTT-WorkSpace\Accenture-Data-Migration\Master4.xlsx"
 )
 
-dp_mock3.run()
+dp_mock4.run()

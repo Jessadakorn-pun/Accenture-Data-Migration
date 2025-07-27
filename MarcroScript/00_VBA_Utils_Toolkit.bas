@@ -1,7 +1,6 @@
-Attribute VB_Name = "Module1"
+Attribute VB_Name = "VAB_Utilities_Toolkit"
 
-' =========================== DELTA MOCK 3 & 4 (Cutover) TOOLS ============================================
-
+' ========================= VAB DELTA TOOLKIT =========================
 Sub Delta01_ListSheets()
  
     Dim ws As Worksheet
@@ -661,7 +660,7 @@ Function GetColumnLetter(colNum As Long) As String
     GetColumnLetter = vArr(0)
 End Function
 
-' =========================== UPLOAD TO SAP TOOLS ============================================ 
+' ========================= VAB FOR LOADING TOOLKIT =========================
 
 Sub Upload01_PrepareToLSMW()
     '
@@ -669,56 +668,43 @@ Sub Upload01_PrepareToLSMW()
     ' This macro prepares a file for import into LSMW (Legacy System Migration Workbench)
     '
 
-    Dim xPicRg As Range
-    Dim xPic As Picture
-    Dim xRg As Range
-    Dim ObjectsName As String
-    Dim findCell As Range
-    Dim searchTerms As Variant
-    Dim i As Integer
-    Dim firstColumn As Integer    ' Column index where "As-Is" is found
+    Dim xPicRg       As Range
+    Dim xPic         As Picture
+    Dim xRg          As Range
+    Dim ObjectsName  As String
+    Dim findCell     As Range
+    Dim searchTerms  As Variant
+    Dim i            As Integer
+    Dim firstColumn  As Integer    ' Column index where "As-Is" is found
 
     ' ========= Check Invalid Status Column ========
-    ' Step 1: Validate "Status" column content from row 9 downward,
-    '         using the real last active row, and highlight invalid cells
     Dim statusCol    As Long
     Dim lastRow      As Long
     Dim r            As Long
     Dim c            As Range
     Dim invalidFound As Boolean
 
-    ' 1a) Find the "Status" header in row 4
     statusCol = 0
     For Each c In ActiveSheet.Rows(4).Cells
         If LCase(Trim(c.Value)) = "status" Then
-            statusCol = c.Column
-            Exit For
+            statusCol = c.Column: Exit For
         End If
     Next c
-
     If statusCol = 0 Then
-        MsgBox "Status column not found in row 4. Please check the header.", _
-               vbCritical, "Validation Error"
+        MsgBox "Status column not found in row 4. Please check the header.", vbCritical, "Validation Error"
         Exit Sub
     End If
 
-    ' 1b) Determine the real last used row on the sheet
     On Error Resume Next
-    lastRow = ActiveSheet.Cells.Find(What:="*", _
-                                     After:=Cells(1, 1), _
-                                     LookIn:=xlFormulas, _
-                                     LookAt:=xlPart, _
-                                     SearchOrder:=xlByRows, _
-                                     SearchDirection:=xlPrevious, _
-                                     MatchCase:=False).Row
+    lastRow = ActiveSheet.Cells.Find(What:="*", After:=Cells(1, 1), _
+                                     LookIn:=xlFormulas, LookAt:=xlPart, _
+                                     SearchOrder:=xlByRows, SearchDirection:=xlPrevious).Row
     On Error GoTo 0
 
-    ' 1c) Scan from row 9 through lastRow for empty or "delete"
     invalidFound = False
     For r = 9 To lastRow
         With ActiveSheet.Cells(r, statusCol)
             If IsEmpty(.Value) Or LCase(Trim(.Value)) = "delete" Then
-                ' Highlight only the invalid cell with a soft red fill
                 .Interior.Color = RGB(255, 204, 204)
                 invalidFound = True
             End If
@@ -730,40 +716,46 @@ Sub Upload01_PrepareToLSMW()
                vbExclamation, "Validation Error"
         Exit Sub
     End If
-    ' ========= end new function add ========
+    ' ========= end Status check ========
 
-    ' ========= function remove before and column "NO." ========
+    ' ========= Remove columns up through "NO." ========
     Dim noCell As Range
     Dim noCol  As Long
-
-    ' 1) Find "NO." in header row (row 4)
     noCol = 0
     For Each noCell In ActiveSheet.Rows(4).Cells
         If LCase(Trim(noCell.Value)) = "no." Then
-            noCol = noCell.Column
-            Exit For
+            noCol = noCell.Column: Exit For
         End If
     Next noCell
 
     If noCol > 0 Then
-        ' 2) Delete columns 1 through the "NO." column (inclusive), then shift left
         ActiveSheet.Range(Cells(1, 1), Cells(1, noCol)).EntireColumn.Delete Shift:=xlToLeft
     Else
-        MsgBox "'NO.' column not found in row 4. Skipping NO. removal.", _
-               vbExclamation, "Notice"
+        MsgBox "'NO.' column not found in row 4. Skipping NO. removal.", vbExclamation, "Notice"
     End If
-    ' ========= end new function add ========
+    ' ========= end NO. removal ========
 
-    ' === Delete Pictures in the first 8 rows ===
+    ' === Delete any picture shapes that sit in rows 1–8 ===
+    Dim shp As Shape
+    Dim topRow As Long
+    
     Application.ScreenUpdating = False
-    Set xRg = ActiveSheet.Range("1:8")
-    For Each xPic In ActiveSheet.Pictures
-        Set xPicRg = ActiveSheet.Range( _
-                         xPic.TopLeftCell.Address & ":" & _
-                         xPic.BottomRightCell.Address)
-        If Not Intersect(xRg, xPicRg) Is Nothing Then xPic.Delete
-    Next xPic
+    
+    For Each shp In ActiveSheet.Shapes
+        ' msoPicture = 13
+        If shp.Type = msoPicture Then
+            ' determine which row its top‐left corner sits in
+            topRow = shp.TopLeftCell.Row
+            If topRow <= 8 Then
+                On Error Resume Next    ' just in case it vanishes under us
+                shp.Delete
+                On Error GoTo 0
+            End If
+        End If
+    Next shp
+    
     Application.ScreenUpdating = True
+    ' === end picture removal ========
 
     ' === Data Cleanup: Remove Unnecessary Rows ===
     ActiveSheet.Rows("1:3").Delete Shift:=xlUp
@@ -772,12 +764,9 @@ Sub Upload01_PrepareToLSMW()
     searchTerms = Array("As-Is", "as is", "As Is", "ASIS", "AS IS", "asis")
     For i = LBound(searchTerms) To UBound(searchTerms)
         Set findCell = ActiveSheet.Cells.Find( _
-                          What:=searchTerms(i), _
-                          LookIn:=xlFormulas, _
-                          LookAt:=xlPart, _
-                          SearchOrder:=xlByRows, _
-                          SearchDirection:=xlNext, _
-                          MatchCase:=False)
+                          What:=searchTerms(i), LookIn:=xlFormulas, _
+                          LookAt:=xlPart, SearchOrder:=xlByRows, _
+                          SearchDirection:=xlNext, MatchCase:=False)
         If Not findCell Is Nothing Then
             firstColumn = findCell.Column
             ActiveSheet.Range(Cells(1, firstColumn), Cells(1, firstColumn + 14)) _
@@ -792,67 +781,81 @@ Sub Upload01_PrepareToLSMW()
     Application.ScreenUpdating = True
     Range("A1").Select
 
-    'Call SaveSheetToTXT   ' (optional export to TXT)
-
-    MsgBox "Data cleanup and file saving completed.", _
-           vbInformation, "Process Completed"
+    MsgBox "Data cleanup and file saving completed.", vbInformation, "Process Completed"
 End Sub
 
-Sub Upload02_SaveSheetToTXT()
-    Dim xFileName1 As String, xFileName2 As String
-    Dim rng As Range
-    Dim DelimChar As String
-    Dim newFileName1 As String, newFileName2 As String
-    Dim i As Long, j As Long
-    Dim lineText As String
-    Dim SavePath As String
-    Dim wbName As String
+Sub Upload02_SaveToTXT()
+    Dim ws        As Worksheet
+    Dim FilePath  As String
+    Dim FileName  As String
+    Dim FullName  As String
+    Dim lastRow   As Long, lastCol As Long
+    Dim r         As Long, c As Long
+    Dim lineBuf   As String
+    Dim emptyRow  As Boolean
+    Dim fNum      As Integer
+    Dim lastCell  As Range
 
-    ' Set the delimiter character between columns
-    DelimChar = vbTab ' Set delimiter to Tab
+    ' === CONFIGURE THIS ===
+    FilePath = "C:\Users\j.a.vorathammaporn\OneDrive - Accenture\Desktop\PTT-WorkSpace\Accenture-Data-Migration\MarcroScript\Test\"
+    Set ws    = ActiveSheet
+    FileName = ws.Name & ".txt"
+    FullName = FilePath & FileName
+    ' ======================
 
-    ' Define the destination folder (Change this path if needed)
-    SavePath = "C:\Users\j.a.vorathammaporn\OneDrive - Accenture\Desktop\PTT-WorkSpace\3_LSMW_Load\LSMWtoTXT"  ' Modify this to your desired path
+    ' Ensure target folder exists
+    If Dir(FilePath, vbDirectory) = "" Then
+        MsgBox "Folder not found:" & vbCrLf & FilePath, vbCritical
+        Exit Sub
+    End If
 
-    ' Remove any existing file extensions from workbook name
-    wbName = ActiveWorkbook.Name
-    If InStr(wbName, ".") > 0 Then wbName = Left(wbName, InStrRev(wbName, ".") - 1)
+    ' Find the true last row and column with any data
+    With ws
+        Set lastCell = .Cells.Find(What:="*", _
+                                   LookIn:=xlValues, _
+                                   SearchOrder:=xlByRows, _
+                                   SearchDirection:=xlPrevious)
+        If Not lastCell Is Nothing Then lastRow = lastCell.Row Else lastRow = 1
 
-    ' Generate two filenames
-    newFileName1 = wbName & ".txt"                          ' First file: WorkbookName.txt
-    newFileName2 = wbName & "_" & ActiveSheet.Name & ".txt" ' Second file: Workbook_Sheet.txt
+        Set lastCell = .Cells.Find(What:="*", _
+                                   LookIn:=xlValues, _
+                                   SearchOrder:=xlByColumns, _
+                                   SearchDirection:=xlPrevious)
+        If Not lastCell Is Nothing Then lastCol = lastCell.Column Else lastCol = 1
+    End With
 
-    xFileName1 = SavePath & newFileName1
-    xFileName2 = SavePath & newFileName2
+    ' Open text file for output (overwrites if exists)
+    fNum = FreeFile
+    Open FullName For Output As #fNum
 
-    ' Define the data range to be saved
-    Set rng = ActiveSheet.Range("A1").CurrentRegion
+    ' Loop through each row, build a tab-delimited line,
+    ' skip entirely blank rows, and suppress the final newline.
+    For r = 1 To lastRow
+        emptyRow = True
+        lineBuf = ""
 
-    ' ==== First Save (WorkbookName.txt) ====
-    Open xFileName1 For Output As #1
-    For i = 1 To rng.Rows.Count
-        lineText = "" ' Reset value before starting a new line
-        For j = 1 To rng.Columns.Count
-            lineText = lineText & IIf(j = 1, "", DelimChar) & rng.Cells(i, j).Value
-        Next j
-        Print #1, lineText
-    Next i
-    Close #1  ' Close first file
+        ' Check for non-blank cells and build the line
+        For c = 1 To lastCol
+            If Len(Trim(ws.Cells(r, c).Value2 & "")) > 0 Then emptyRow = False
+            lineBuf = lineBuf & (ws.Cells(r, c).Value2 & "")
+            If c < lastCol Then lineBuf = lineBuf & vbTab
+        Next c
 
-    ' ==== Second Save (Workbook_Sheet.txt) ====
-    Open xFileName2 For Output As #2
-    For i = 1 To rng.Rows.Count
-        lineText = "" ' Reset value before starting a new line
-        For j = 1 To rng.Columns.Count
-            lineText = lineText & IIf(j = 1, "", DelimChar) & rng.Cells(i, j).Value
-        Next j
-        Print #2, lineText
-    Next i
-    Close #2  ' Close second file
+        If Not emptyRow Then
+            If r = lastRow Then
+                ' No trailing CRLF on the very last data row
+                Print #fNum, lineBuf;
+            Else
+                Print #fNum, lineBuf
+            End If
+        End If
+    Next r
 
-    ' Notify the user
-    MsgBox "Files saved successfully at:" & vbCrLf & xFileName1 & vbCrLf & xFileName2, vbInformation
+    Close #fNum
+
+    MsgBox "Export complete:" & vbCrLf & FullName, vbInformation
 End Sub
+
 
 Sub Upload03_ReconciledAddReviewColumnsAndFormat()
     Dim ws As Worksheet
@@ -911,9 +914,48 @@ Sub Upload03_ReconciledAddReviewColumnsAndFormat()
 End Sub
 
 
-' =========================== UTILITY TOOLS ============================================
+' ========================= VAB FOR UTILITIES TOOLKIT =========================
 
-Sub Utils_SplitingDataToBatch()
+Sub Utils_AutoTextToColumn()
+    Dim ws As Worksheet
+    Dim lastCol As Long, c As Long
+    Dim fldInfo() As Variant
+    
+    ' Reference the active sheet
+    Set ws = ActiveSheet
+    
+    ' Find last used column in row 1
+    lastCol = ws.Cells(1, ws.Columns.Count).End(xlToLeft).Column
+    
+    ' Build a FieldInfo array so that EVERY output column is Text.
+    ' We'll assume no more than 50 splits per column—adjust 1 To 50 as needed.
+    ReDim fldInfo(1 To 50, 1 To 2)
+    For c = 1 To 50
+        fldInfo(c, 1) = c            ' output column index
+        fldInfo(c, 2) = xlTextFormat ' treat as Text
+    Next c
+    
+    Application.ScreenUpdating = False
+    
+    ' Loop through each column and re-parse it
+    For c = 1 To lastCol
+        With ws.Columns(c)
+            .TextToColumns _
+                Destination:=.Cells(1, 1), _
+                DataType:=xlDelimited, _
+                TextQualifier:=xlTextQualifierNone, _
+                ConsecutiveDelimiter:=False, _
+                Tab:=True, _
+                FieldInfo:=fldInfo, _
+                TrailingMinusNumbers:=True
+        End With
+    Next c
+    
+    Application.ScreenUpdating = True
+    MsgBox "All columns have been re-parsed as Tab-delimited Text.", vbInformation
+End Sub
+
+Sub Utils_SplittingDataToBatch()
     Dim wb As Workbook
     Dim wsSource As Worksheet
     Dim headerRow As Range
@@ -921,14 +963,16 @@ Sub Utils_SplitingDataToBatch()
     Dim batchSize As Long
     Dim totalRows As Long
     Dim startRow As Long, endRow As Long
-    Dim batchNum As Long, createdBatches As Long
+    Dim batchNum As Long
     Dim userInput As Variant
+    Dim baseName As String
 
-    ' === ensure we use the workbook that the user has active ===
-    Set wb = ActiveWorkbook 
+    ' Use the active workbook & sheet
+    Set wb = ActiveWorkbook
     Set wsSource = wb.ActiveSheet
+    baseName = wsSource.Name
 
-    ' === get batch size from user ===
+    ' Get batch size
     userInput = Application.InputBox("Enter the batch size (rows per sheet):", "Batch Size", Type:=1)
     If userInput = False Or Not IsNumeric(userInput) Or userInput <= 0 Then
         MsgBox "Invalid batch size. Operation cancelled.", vbExclamation
@@ -936,7 +980,7 @@ Sub Utils_SplitingDataToBatch()
     End If
     batchSize = CLng(userInput)
 
-    ' === determine how many data-rows we have (excluding header) ===
+    ' Count data rows (excluding header)
     totalRows = wsSource.Cells(wsSource.Rows.Count, 1).End(xlUp).Row - 1
     If totalRows <= 0 Then
         MsgBox "No data to split.", vbExclamation
@@ -952,19 +996,20 @@ Sub Utils_SplitingDataToBatch()
     Do While startRow <= totalRows + 1
         endRow = WorksheetFunction.Min(startRow + batchSize - 1, totalRows + 1)
 
-        ' add new sheet at the end
+        ' Add new sheet at the end
         Set newSheet = wb.Sheets.Add(After:=wb.Sheets(wb.Sheets.Count))
-        
-        ' try to name it; if that fails (e.g. duplicate), append a time-stamp
+
+        ' Name it <OriginalSheetName>_batchX
         On Error Resume Next
-        newSheet.Name = "batch_" & batchNum
+        newSheet.Name = baseName & "_batch" & batchNum
         If Err.Number <> 0 Then
             Err.Clear
-            newSheet.Name = "batch_" & batchNum & "_" & Format(Now, "hhmmss")
+            ' Fallback if name exists: append timestamp
+            newSheet.Name = baseName & "_batch" & batchNum & "_" & Format(Now, "hhmmss")
         End If
         On Error GoTo 0
 
-        ' copy header + data block
+        ' Copy header + data
         headerRow.Copy Destination:=newSheet.Range("A1")
         wsSource.Rows(startRow & ":" & endRow).Copy Destination:=newSheet.Range("A2")
 
@@ -974,8 +1019,136 @@ Sub Utils_SplitingDataToBatch()
 
     Application.ScreenUpdating = True
 
-    createdBatches = batchNum - 1
     MsgBox "Batching complete!" & vbCrLf & _
            "Total rows (excl. header): " & totalRows & vbCrLf & _
-           "Total batches: " & createdBatches, vbInformation
+           "Total batches: " & (batchNum - 1), vbInformation
+End Sub
+
+
+Sub Utils_SaveAllBatchSheetsToTXT()
+    Dim wb           As Workbook
+    Dim ws           As Worksheet
+    Dim FilePath     As String
+    Dim FileName     As String
+    Dim FullName     As String
+    Dim lastRow      As Long, lastCol As Long
+    Dim chunkSize    As Long
+    Dim startRow     As Long, endRow As Long
+    Dim dataArr      As Variant
+    Dim i            As Long, j As Long
+    Dim absoluteRow  As Long
+    Dim chunkText    As String
+    Dim stm          As Object   ' ADODB.Stream
+    Dim lastCell     As Range
+    Dim emptyRow     As Boolean
+
+    ' === CONFIGURE THIS ===
+    FilePath  = "C:\Users\j.a.vorathammaporn\OneDrive - Accenture\Desktop\PTT-WorkSpace\Accenture-Data-Migration\MarcroScript\Test\"
+    chunkSize = 10000    ' rows per write-chunk
+    ' ======================
+
+    ' Ensure target folder exists
+    If Dir(FilePath, vbDirectory) = "" Then
+        MsgBox "Target folder not found:" & vbCrLf & FilePath, vbCritical
+        Exit Sub
+    End If
+
+    ' Speed up Excel
+    With Application
+        .ScreenUpdating = False
+        .EnableEvents   = False
+        .Calculation    = xlCalculationManual
+    End With
+
+    Set wb = ActiveWorkbook
+
+    For Each ws In wb.Worksheets
+        ' Only sheets named like "<original>_batchX"
+        If ws.Name Like "*_batch[0-9]*" Then
+
+            FileName = ws.Name & ".txt"
+            FullName = FilePath & FileName
+
+            ' Find true last row & column with any data
+            With ws
+                Set lastCell = .Cells.Find(What:="*", _
+                                          LookIn:=xlValues, _
+                                          SearchOrder:=xlByRows, _
+                                          SearchDirection:=xlPrevious)
+                If Not lastCell Is Nothing Then
+                    lastRow = lastCell.Row
+                Else
+                    lastRow = 1
+                End If
+
+                Set lastCell = .Cells.Find(What:="*", _
+                                          LookIn:=xlValues, _
+                                          SearchOrder:=xlByColumns, _
+                                          SearchDirection:=xlPrevious)
+                If Not lastCell Is Nothing Then
+                    lastCol = lastCell.Column
+                Else
+                    lastCol = 1
+                End If
+            End With
+
+            ' Initialize UTF-8 stream (with BOM)
+            Set stm = CreateObject("ADODB.Stream")
+            With stm
+                .Type    = 2    ' adTypeText
+                .Charset = "utf-8"
+                .Open
+
+                ' Write in chunks
+                For startRow = 1 To lastRow Step chunkSize
+                    endRow = Application.Min(startRow + chunkSize - 1, lastRow)
+                    dataArr = ws.Range(ws.Cells(startRow, 1), ws.Cells(endRow, lastCol)).Value2
+
+                    chunkText = ""
+                    For i = 1 To UBound(dataArr, 1)
+                        absoluteRow = startRow + i - 1
+
+                        ' Skip entirely blank rows
+                        emptyRow = True
+                        For j = 1 To UBound(dataArr, 2)
+                            If Len(Trim(dataArr(i, j) & "")) > 0 Then
+                                emptyRow = False
+                                Exit For
+                            End If
+                        Next j
+
+                        If Not emptyRow Then
+                            ' Build tab-delimited line
+                            For j = 1 To UBound(dataArr, 2)
+                                chunkText = chunkText & (dataArr(i, j) & "")
+                                If j < UBound(dataArr, 2) Then chunkText = chunkText & vbTab
+                            Next j
+
+                            ' Only add CRLF if this isn't the last data row
+                            If absoluteRow <> lastRow Then
+                                chunkText = chunkText & vbCrLf
+                            End If
+                        End If
+                    Next i
+
+                    ' Write raw text (no extra newline)
+                    .WriteText chunkText, 0   ' adWriteText
+                Next startRow
+
+                ' Save & close
+                .SaveToFile FullName, 2    ' adSaveCreateOverWrite
+                .Close
+            End With
+        End If
+    Next ws
+
+    ' Restore Excel
+    With Application
+        .Calculation    = xlCalculationAutomatic
+        .EnableEvents   = True
+        .ScreenUpdating = True
+    End With
+
+    MsgBox "All *_batch# sheets exported without trailing blank line to:" & vbCrLf & FilePath, _
+           vbInformation, "Export Complete"
 End Sub
