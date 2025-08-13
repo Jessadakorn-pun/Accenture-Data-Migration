@@ -117,12 +117,19 @@ class DeltaProcessor:
             df.sort_values(by=[df.columns[kc], df.columns[mc]], inplace=True)
             df.reset_index(drop=True, inplace=True)
             print(f"  • sort: {time.time()-t25:.2f}s")
+            
+            # === ClearColumnDeltaIndicator (added) ===
+            t_cdi_start = time.time()
+            df = self._clear_delta_indicator(df)
+            t_cdi_end = time.time()
+            print(f"  • Clear delta indicator : {t_cdi_end - t_cdi_start:.2f}s")
+            # ========================================
 
             # DeltaDelete: old (3) not in new (4)
             t_delete_start = time.time()
             df = self._delta_delete(df)
             t_delete_end = time.time()
-            print(f"  •  DeltaDelete : {t_delete_end - t_delete_start:.2f}s")
+            print(f"  • DeltaDelete : {t_delete_end - t_delete_start:.2f}s")
 
             # DeltaNew: new (4) not in old (3)
             t_new_start = time.time()
@@ -188,6 +195,17 @@ class DeltaProcessor:
         print(f" → file done in {time.time()-t0:.2f}s")
 
     # (Other methods unchanged)
+    
+    def _clear_delta_indicator(self, df: pd.DataFrame) -> pd.DataFrame:
+        """
+        ClearColumnDeltaIndicator equivalent:
+        blanks out the delta indicator column in the in-memory DataFrame
+        before DeltaDelete/DeltaNew/DeltaChange are applied.
+        """
+        dc = self.params['delta_col'] - 1
+        colname = df.columns[dc]
+        df[colname] = ''  # Clear contents
+        return df
 
     def _delta_delete(self, df: pd.DataFrame) -> pd.DataFrame:
         p = self.params

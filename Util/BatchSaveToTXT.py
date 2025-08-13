@@ -1,49 +1,39 @@
 import os
+import re
 import pandas as pd
 
-def save_load_sheets_to_txt(
+def save_batch_sheets_to_txt(
     excel_path: str,
-    out_dir1: str,
+    out_dir: str,
     sep: str = '\t',
 ):
     """
-    Reads all sheets in `excel_path` whose name begins with "Load_"
-    and writes each to two text files (one in out_dir1, one in out_dir2)
-    as UTF-8 with BOM, tab-delimited by default.
-
-    Parameters
-    ----------
-    excel_path : str
-        Path to the source .xlsx file.
-    out_dir1 : str
-        First output directory for the .txt files.
-    out_dir2 : str
-        Second output directory for the .txt files.
-    sep : str, default '\t'
-        Column separator for the text files.
+    Reads all sheets in `excel_path` whose name ends with '_batchN'
+    (where N is one or more digits), and writes each to a .txt file
+    in out_dir as UTF-8 with BOM, tab-delimited by default.
     """
+    # make sure output folder exists
+    os.makedirs(out_dir, exist_ok=True)
 
-    
-    # Load Excel file (to get sheet names without reading all data at once)
+    # regex: matches any name ending in "_batch" + digits
+    batch_re = re.compile(r'_batch\d+$')
+
     xls = pd.ExcelFile(excel_path)
-    
-    # Process each sheet whose name starts with "batch_"
     for sheet_name in xls.sheet_names:
-        if sheet_name.startswith('batch_'):
-            # Read sheet into DataFrame (all columns as strings)
+        if batch_re.search(sheet_name):
+            # read as all strings
             df = pd.read_excel(excel_path, sheet_name=sheet_name, dtype=str)
-            
-            # Construct a base filename (preserve the sheet name)
-            filename = f"{sheet_name}.txt"
-            
-            # Full output paths
-            path1 = os.path.join(out_dir1, filename)
-            
-            # Write both files as UTF-8 with BOM
-            df.to_csv(path1, sep=sep, index=False, encoding='utf-8-sig')
-            
-            print(f"Saved {sheet_name!r}")
-        print("All sheets saved successfully.")
+
+            # output filename = same as sheet
+            out_path = os.path.join(out_dir, f"{sheet_name}.txt")
+
+            # write with UTF-8 BOM
+            df.to_csv(out_path, sep=sep, index=False, encoding='utf-8-sig')
+
+            print(f"Saved batch sheet: {sheet_name} → {out_path}")
+
+    print("All batch sheets exported.")
+
             
 if __name__ == "__main__":
     save_load_sheets_to_txt(

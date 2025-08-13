@@ -1,4 +1,4 @@
-Public Sub Delta02_CopyTemplateToBlankSheet_M3()
+Public Sub Delta02_CopyTemplateToBlankSheet_CUTOVER()
     Dim ws As Worksheet
     Dim nameListSheet As Worksheet
     Dim newName As String
@@ -28,13 +28,12 @@ Public Sub Delta02_CopyTemplateToBlankSheet_M3()
             
             '********************************************** please change on  Cutover
     
-            If sheetName Like "DeltaM2*" Or sheetName Like "Delta*" Or sheetName Like "M2*" Or sheetName Like "M 2*" Or sheetName Like "m2*" Or sheetName Like "m 2*" Or sheetName Like "Mock2*" Or sheetName Like "Mock 2*" Or sheetName Like "MOCK2*" Or sheetName Like "MOCK 2*" Or sheetName Like "mock2*" Or sheetName Like "mock 2*" Then
-                newName = "M3 " & Mid(sheetName, InStr(sheetName, " ") + 1)
+            If sheetName Like "DeltaM3*" Or sheetName Like "Delta*" Or sheetName Like "M3*" Or sheetName Like "M 3*" Or sheetName Like "m3*" Or sheetName Like "m 3*" Or sheetName Like "Mock3*" Or sheetName Like "Mock 3*" Or sheetName Like "MOCK3*" Or sheetName Like "MOCK 3*" Or sheetName Like "mock3*" Or sheetName Like "mock 3*" Then
+                newName = "M4 " & Mid(sheetName, InStr(sheetName, " ") + 1)
             Else
-                newName = "M3 " & ws1.Name
+                newName = "M4 " & ws1.Name
             End If
-            
-    
+
             
             sheetExists = False
         

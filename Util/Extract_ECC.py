@@ -9,8 +9,8 @@ from tqdm import tqdm
 
 # extract all data from sap
 
-table_name = """PA0041""".split('\t')  # ใส่ชื่อ table แยกด้วย 1 tab
-export_text_path = r"C:\Users\seenlawat.muensuwan\OneDrive - Accenture\Documents\PTT power\SAP automate\Recon M3"  # ใส่ path ที่อยากเก็บ files
+table_name = """PA0022""".split(';')  # ใส่ชื่อ table แยกด้วย 1 tab
+export_text_path = r"C:\Users\j.a.vorathammaporn\OneDrive - Accenture\Documents\SAP\SAP GUI"   # ใส่ path ที่อยากเก็บ files
 limit_record = ""
 columns = []
 

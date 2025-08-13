@@ -1,4 +1,4 @@
-Sub Utils_SaveAllBatchSheetsToTXT()
+Sub Utils_SaveAllBatchSheetsToTXT_UTF8BOM()
     Dim wb           As Workbook
     Dim ws           As Worksheet
     Dim FilePath     As String
@@ -72,6 +72,9 @@ Sub Utils_SaveAllBatchSheetsToTXT()
                 .Charset = "utf-8"
                 .Open
 
+                ' --- Write UTF-8 BOM ---
+                .WriteText ChrW(&HFEFF), 0
+
                 ' Write in chunks
                 For startRow = 1 To lastRow Step chunkSize
                     endRow = Application.Min(startRow + chunkSize - 1, lastRow)
@@ -104,12 +107,12 @@ Sub Utils_SaveAllBatchSheetsToTXT()
                         End If
                     Next i
 
-                    ' Write raw text (no extra newline)
+                    ' Write raw text chunk (no extra newline)
                     .WriteText chunkText, 0   ' adWriteText
                 Next startRow
 
-                ' Save & close
-                .SaveToFile FullName, 2    ' adSaveCreateOverWrite
+                ' Save & close (2 = adSaveCreateOverWrite)
+                .SaveToFile FullName, 2
                 .Close
             End With
         End If
@@ -122,6 +125,6 @@ Sub Utils_SaveAllBatchSheetsToTXT()
         .ScreenUpdating = True
     End With
 
-    MsgBox "All *_batch# sheets exported without trailing blank line to:" & vbCrLf & FilePath, _
+    MsgBox "All *_batch# sheets exported with UTF-8 BOM to:" & vbCrLf & FilePath, _
            vbInformation, "Export Complete"
 End Sub
