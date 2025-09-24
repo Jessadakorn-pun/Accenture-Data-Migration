@@ -237,7 +237,7 @@ Public Sub Delta03_CopySheetToDelta_M3()
     Dim newName As String
     Dim sheetName, sheetName2, sheetName3 As String
     Dim i As Integer
-    Dim lastRow, LastRow2, LastColumn As Long
+    Dim LastRow, LastRow2, LastColumn As Long
     Dim LetterColumn As String
     Dim sheetExists As Boolean
     Dim cellValue As String
@@ -300,20 +300,20 @@ Public Sub Delta03_CopySheetToDelta_M3()
                      
             
             ' Check last row
-            lastRow = Cells(Rows.Count, 7).End(xlUp).Row
+            LastRow = Cells(Rows.Count, 7).End(xlUp).Row
             
             
             'copy status form previous mock from column A to B and clear contents in column A
-            Range("A9:A" & lastRow).Select
+            Range("A9:A" & LastRow).Select
             Selection.Copy
             ActiveCell.Offset(0, 1).Range("A1").Select
             Selection.PasteSpecial Paste:=xlPasteValues, Operation:=xlNone, SkipBlanks _
                 :=False, Transpose:=False
-            Range("A9:A" & lastRow).Select
+            Range("A9:A" & LastRow).Select
             Selection.ClearContents
             
             'copy status form Mock number from column D to C and clear contents in column A
-            Range("D9:D" & lastRow).Select
+            Range("D9:D" & LastRow).Select
             Selection.Copy
             ActiveCell.Offset(0, -1).Range("A1").Select
             Selection.PasteSpecial Paste:=xlPasteValues, Operation:=xlNone, SkipBlanks _
@@ -323,7 +323,7 @@ Public Sub Delta03_CopySheetToDelta_M3()
             ActiveCell.Offset(0, 1).Range("A1").Select
             ActiveCell.FormulaR1C1 = "2" 'change in Next Time
             Selection.Copy
-            Range("D9:D" & lastRow).Select
+            Range("D9:D" & LastRow).Select
             Selection.PasteSpecial Paste:=xlPasteValues, Operation:=xlNone, SkipBlanks _
                 :=False, Transpose:=False
             
@@ -347,27 +347,27 @@ Public Sub Delta03_CopySheetToDelta_M3()
                 On Error GoTo 0
                 If Not ws3 Is Nothing Then
                     ws3.Select
-                   lastRow = Cells(Rows.Count, 4).End(xlUp).Row
+                   LastRow = Cells(Rows.Count, 4).End(xlUp).Row
                    
-                   Range("G" & lastRow + 1).Select
+                   Range("G" & LastRow + 1).Select
                    Selection.PasteSpecial Paste:=xlPasteValues, Operation:=xlNone, SkipBlanks _
                        :=False, Transpose:=False
                        
                    LastRow3 = Cells(Rows.Count, 7).End(xlUp).Row
                        
-                   Rows(lastRow & ":" & lastRow).Select
+                   Rows(LastRow & ":" & LastRow).Select
                    Selection.Copy
                    
-                   Rows(lastRow & ":" & LastRow3).Select
+                   Rows(LastRow & ":" & LastRow3).Select
                    Selection.PasteSpecial Paste:=xlPasteFormats, Operation:=xlNone, _
                        SkipBlanks:=False, Transpose:=False
                    Application.CutCopyMode = False
                    
-                   Range("D" & lastRow + 1).Select
+                   Range("D" & LastRow + 1).Select
                    ActiveCell.FormulaR1C1 = "3"
                    Selection.Copy
                 
-                   Range("D" & lastRow + 1 & ":D" & LastRow3).Select
+                   Range("D" & LastRow + 1 & ":D" & LastRow3).Select
                    Selection.PasteSpecial Paste:=xlPasteValues, Operation:=xlNone, SkipBlanks _
                        :=False, Transpose:=False
                        
@@ -389,7 +389,7 @@ Public Sub Delta03_CopySheetToDelta_M3()
         End If
 
 
-        'Delta05optional_DeltaRow5
+        Delta05optional_DeltaRow5
         
        
         ' Find the last column in row 4
@@ -467,7 +467,7 @@ Public Sub Delta03_CopySheetToDelta_M3()
    
     Sheets("Name list").Select
     
-    lastRow = Cells(Rows.Count, 1).End(xlUp).Row
+    LastRow = Cells(Rows.Count, 1).End(xlUp).Row
     
     Sheets("Name list").Range("E:L").Delete
     Range("A1").Select
@@ -520,7 +520,7 @@ Public Sub Delta03_CopySheetToDelta_M3()
     ActiveCell.Offset(0, -4).Range("A1:E1").Select
     ActiveCell.Activate
     Selection.Copy
-    ActiveCell.Offset(0, 0).Range("A1:E" & lastRow - 1).Select
+    ActiveCell.Offset(0, 0).Range("A1:E" & LastRow - 1).Select
     ActiveCell.Activate
     ActiveSheet.Paste
     Application.CutCopyMode = False
@@ -695,7 +695,7 @@ Public Sub Delta03_CopySheetToDelta_ACO_CUTOVER()
         End If
 
 
-        ' Delta05optional_DeltaRow5
+        Delta05optional_DeltaRow5
         
        
         ' Find the last column in row 4
@@ -1029,7 +1029,7 @@ Sub Upload01_PrepareToLSMW()
 
     ' ========= Check Invalid Status Column ========
     Dim statusCol    As Long
-    Dim lastRow      As Long
+    Dim LastRow      As Long
     Dim r            As Long
     Dim c            As Range
     Dim invalidFound As Boolean
@@ -1046,13 +1046,13 @@ Sub Upload01_PrepareToLSMW()
     End If
 
     On Error Resume Next
-    lastRow = ActiveSheet.Cells.Find(What:="*", After:=Cells(1, 1), _
+    LastRow = ActiveSheet.Cells.Find(What:="*", After:=Cells(1, 1), _
                                      LookIn:=xlFormulas, LookAt:=xlPart, _
                                      SearchOrder:=xlByRows, SearchDirection:=xlPrevious).Row
     On Error GoTo 0
 
     invalidFound = False
-    For r = 9 To lastRow
+    For r = 9 To LastRow
         With ActiveSheet.Cells(r, statusCol)
             If IsEmpty(.Value) Or LCase(Trim(.Value)) = "delete" Then
                 .Interior.Color = RGB(255, 204, 204)
@@ -1139,7 +1139,7 @@ Sub Upload02_SaveToTXT()
     Dim FilePath   As String
     Dim FileName   As String
     Dim FullName   As String
-    Dim lastRow    As Long, lastCol As Long
+    Dim LastRow    As Long, lastCol As Long
     Dim chunkSize  As Long
     Dim startRow   As Long, endRow As Long
     Dim dataArr    As Variant
@@ -1151,11 +1151,11 @@ Sub Upload02_SaveToTXT()
     Dim stm        As Object
 
     ' === CONFIGURE THIS ===
-    FilePath  = "C:\Users\j.a.vorathammaporn\OneDrive - Accenture\Desktop\PTT-WorkSpace\3_LSMW_Load\00_LSMWtoTXT\Load\"
+    FilePath = "C:\Users\j.a.vorathammaporn\OneDrive - Accenture\Desktop\PTT-WorkSpace\3_LSMW_Load\00_LSMWtoTXT\Load\"
     chunkSize = 10000    ' rows per write-chunk
-    Set ws    = ActiveSheet
-    FileName  = ws.Name & ".txt"
-    FullName  = FilePath & FileName
+    Set ws = ActiveSheet
+    FileName = ws.Name & ".txt"
+    FullName = FilePath & FileName
     ' ======================
 
     ' Ensure target folder exists
@@ -1168,7 +1168,7 @@ Sub Upload02_SaveToTXT()
     With ws
         Set lastCell = .Cells.Find(What:="*", LookIn:=xlValues, _
                                    SearchOrder:=xlByRows, SearchDirection:=xlPrevious)
-        If Not lastCell Is Nothing Then lastRow = lastCell.Row Else lastRow = 1
+        If Not lastCell Is Nothing Then LastRow = lastCell.Row Else LastRow = 1
 
         Set lastCell = .Cells.Find(What:="*", LookIn:=xlValues, _
                                    SearchOrder:=xlByColumns, SearchDirection:=xlPrevious)
@@ -1180,7 +1180,7 @@ Sub Upload02_SaveToTXT()
     Const adSaveCreateOverWrite = 2
     Set stm = CreateObject("ADODB.Stream")
     With stm
-        .Type    = adTypeText
+        .Type = adTypeText
         .Charset = "utf-8"
         .Open
 
@@ -1188,8 +1188,8 @@ Sub Upload02_SaveToTXT()
         .WriteText ChrW(&HFEFF), 0
 
         ' Process rows in chunks
-        For startRow = 1 To lastRow Step chunkSize
-            endRow = Application.Min(startRow + chunkSize - 1, lastRow)
+        For startRow = 1 To LastRow Step chunkSize
+            endRow = Application.Min(startRow + chunkSize - 1, LastRow)
             dataArr = ws.Range(ws.Cells(startRow, 1), ws.Cells(endRow, lastCol)).Value2
 
             chunkText = ""
@@ -1211,7 +1211,7 @@ Sub Upload02_SaveToTXT()
                         If j < UBound(dataArr, 2) Then chunkText = chunkText & vbTab
                     Next j
                     ' Append CRLF unless this is the very last data row
-                    If absoluteRow <> lastRow Then
+                    If absoluteRow <> LastRow Then
                         chunkText = chunkText & vbCrLf
                     End If
                 End If
@@ -1235,7 +1235,7 @@ End Sub
 
 Sub Upload03_ReconciledAddReviewColumnsAndFormat()
     Dim ws As Worksheet
-    Dim lastRow As Long, lastCol As Long
+    Dim LastRow As Long, lastCol As Long
     Dim reviewCol As Range, checkRange As Range
     
     ' Turn off screen updating for better performance
@@ -1244,7 +1244,7 @@ Sub Upload03_ReconciledAddReviewColumnsAndFormat()
     Set ws = ActiveSheet
     
     ' Find the last row and last column dynamically
-    lastRow = ws.Cells(ws.Rows.Count, "A").End(xlUp).Row
+    LastRow = ws.Cells(ws.Rows.Count, "A").End(xlUp).Row
     lastCol = ws.Cells(1, ws.Columns.Count).End(xlToLeft).Column
     
     ' Add "Review", "A", and "B" columns
@@ -1265,7 +1265,7 @@ Sub Upload03_ReconciledAddReviewColumnsAndFormat()
     reviewCol.Offset(1, 2).FormulaR1C1 = "=IF(ISBLANK(RC[-2]),""Passed"",""Failed"")"
     
     ' Autofill the formula dynamically based on the last row
-    Set checkRange = ws.Range(reviewCol.Offset(1, 1), reviewCol.Offset(lastRow - 1, 2))
+    Set checkRange = ws.Range(reviewCol.Offset(1, 1), reviewCol.Offset(LastRow - 1, 2))
     reviewCol.Offset(1, 1).Resize(1, 2).AutoFill Destination:=checkRange
     
     ' Convert formulas to values (Copy & Paste as Values)
@@ -1407,7 +1407,7 @@ Sub Utils_SaveAllBatchSheetsToTXT()
     Dim FilePath     As String
     Dim FileName     As String
     Dim FullName     As String
-    Dim lastRow      As Long, lastCol As Long
+    Dim LastRow      As Long, lastCol As Long
     Dim chunkSize    As Long
     Dim startRow     As Long, endRow As Long
     Dim dataArr      As Variant
@@ -1419,7 +1419,7 @@ Sub Utils_SaveAllBatchSheetsToTXT()
     Dim emptyRow     As Boolean
 
     ' === CONFIGURE THIS ===
-    FilePath  = "C:\Users\j.a.vorathammaporn\OneDrive - Accenture\Desktop\PTT-WorkSpace\3_LSMW_Load\00_LSMWtoTXT\Load\"
+    FilePath = "C:\Users\j.a.vorathammaporn\OneDrive - Accenture\Desktop\PTT-WorkSpace\3_LSMW_Load\00_LSMWtoTXT\Load\"
     chunkSize = 20000    ' rows per write-chunk
     ' ======================
 
@@ -1432,8 +1432,8 @@ Sub Utils_SaveAllBatchSheetsToTXT()
     ' Speed up Excel
     With Application
         .ScreenUpdating = False
-        .EnableEvents   = False
-        .Calculation    = xlCalculationManual
+        .EnableEvents = False
+        .Calculation = xlCalculationManual
     End With
 
     Set wb = ActiveWorkbook
@@ -1452,9 +1452,9 @@ Sub Utils_SaveAllBatchSheetsToTXT()
                                           SearchOrder:=xlByRows, _
                                           SearchDirection:=xlPrevious)
                 If Not lastCell Is Nothing Then
-                    lastRow = lastCell.Row
+                    LastRow = lastCell.Row
                 Else
-                    lastRow = 1
+                    LastRow = 1
                 End If
 
                 Set lastCell = .Cells.Find(What:="*", _
@@ -1471,7 +1471,7 @@ Sub Utils_SaveAllBatchSheetsToTXT()
             ' Initialize UTF-8 stream (with BOM)
             Set stm = CreateObject("ADODB.Stream")
             With stm
-                .Type    = 2    ' adTypeText
+                .Type = 2       ' adTypeText
                 .Charset = "utf-8"
                 .Open
 
@@ -1479,8 +1479,8 @@ Sub Utils_SaveAllBatchSheetsToTXT()
                 .WriteText ChrW(&HFEFF), 0
 
                 ' Write in chunks
-                For startRow = 1 To lastRow Step chunkSize
-                    endRow = Application.Min(startRow + chunkSize - 1, lastRow)
+                For startRow = 1 To LastRow Step chunkSize
+                    endRow = Application.Min(startRow + chunkSize - 1, LastRow)
                     dataArr = ws.Range(ws.Cells(startRow, 1), ws.Cells(endRow, lastCol)).Value2
 
                     chunkText = ""
@@ -1504,7 +1504,7 @@ Sub Utils_SaveAllBatchSheetsToTXT()
                             Next j
 
                             ' Only add CRLF if this isn't the last data row
-                            If absoluteRow <> lastRow Then
+                            If absoluteRow <> LastRow Then
                                 chunkText = chunkText & vbCrLf
                             End If
                         End If
@@ -1523,8 +1523,8 @@ Sub Utils_SaveAllBatchSheetsToTXT()
 
     ' Restore Excel
     With Application
-        .Calculation    = xlCalculationAutomatic
-        .EnableEvents   = True
+        .Calculation = xlCalculationAutomatic
+        .EnableEvents = True
         .ScreenUpdating = True
     End With
 

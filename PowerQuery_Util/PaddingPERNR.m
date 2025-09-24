@@ -8,3 +8,5 @@
                 type text
             }
         )
+
+Text.PadStart(Text.From([A1]), 8, "0")

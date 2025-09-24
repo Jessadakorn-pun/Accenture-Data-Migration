@@ -44,3 +44,11 @@ consolidate_filled[cols_to_fill] = (
 # adding row number for each PERNR and BEGDA : ROW_NUMBER(OVER PARTITION BY PERNR, BEGDA ORDER BY PERNR, BEGDA)
 result_2.values_sort(by=['0302_PERNR', '0302_BEGDA'], assending=True)
 result_2['ROW_NUMBER'] = result_2.groupby(['0302_PERNR', '0302_BEGDA']).cumcount() + 1
+
+
+def intersects(start1, end1, start2, end2):
+    """Return a boolean Series indicating if [start1–end1] overlaps [start2–end2]."""
+    return (
+        ((start1 >= start2) & (start1 <= end2)) |
+        ((start2 >= start1) & (start2 <= end1))
+    )
